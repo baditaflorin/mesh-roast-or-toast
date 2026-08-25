@@ -10,6 +10,7 @@ import {
   useFlashOnChange,
   useNamedPeer,
   usePhase,
+  useRoster,
   useRotatingTurn,
   type MeshConfig,
   type YRoom,
@@ -31,10 +32,11 @@ export function Feature({ room, config }: Props) {
 
 function Body({ room, config }: { room: YRoom; config: MeshConfig }) {
   const { name, setName, nameOf, myName } = useNamedPeer(config, room);
+  const roster = useRoster(room);
   const clock = useMemo(() => createClockSync(room.provider), [room]);
   useEffect(() => () => clock.destroy(), [clock]);
 
-  useFairRng(room, "roast-salts");
+  useFairRng(room, "roast-salts", { peerIds: roster.present });
   const phase = usePhase<"lobby" | "hot-seat" | "done">(room, "phase", "lobby");
   const turn = useRotatingTurn(room, clock, { slotMs: SLOT_MS, order: "shuffle" });
   const state = room.doc.getMap<number>("state");
